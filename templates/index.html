@@ -2,54 +2,147 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Agent Chat</title>
+    <title>Bot Chat</title>
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
     <style>
-        .message {
-            margin-bottom: 10px;
+        body {
+            background-color: #2E3440;
+            color: #D8DEE9;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        h1 {
+            color: #D8DEE9;
+            font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+            margin-bottom: 20px;
         }
         #chat {
-            max-height: 400px;
+            max-height: 600px;
+            width: 60%;
+            background-color: #3B4252;
+            border: 1px solid #4C566A;
+            padding: 20px;
             overflow-y: auto;
-            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+        .message {
+            background-color: #4C566A;
             padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            color: #D8DEE9;
+        }
+        input, button, select {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            margin: 5px;
+            font-family: 'Arial', sans-serif;
+        }
+        input {
+            background-color: #434C5E;
+            color: #D8DEE9;
+        }
+        button {
+            background-color: #FFFFFF;
+            color: #2E3440;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #D8DEE9;
+        }
+
+        select {
+            margin-top: 20px;
+            margin-bottom: 20px;
         }
     </style>
 </head>
 <body>
-    <h1>Chat with Agents</h1>
-    <div id="chat"></div>
-    <input type="text" id="topic_input" placeholder="Enter a topic..." autocomplete="off"/>
-    <button onclick="startConversation()">Start Conversation</button>
+<h1>Bot Chat</h1>
+<div id="chat"></div>
+<input type="text" id="topic_input" placeholder="Enter a topic..." autocomplete="off" onkeydown="handleKeyPress(event)"/>
+<select id="agent_selector">
+    <option value="all">All Agents</option>
+    <option value="Light Yagami">Light Yagami</option>
+    <option value="Sailor Moon">Sailor Moon</option>
+    <option value="Levi Ackerman">Levi Ackerman</option>
+    <option value="Hello Kitty">Hello Kitty</option>
+    <option value="Kuromi">Kuromi</option>
+    <option value="Tendou Satori">Tendou Satori</option>
+</select>
+<button onclick="startConversation()">Start Conversation</button>
 
-    <script>
-        var socket = io.connect('http://127.0.0.1:5000');
-        var currentMessageContainer = null;
-        var currentRole = null;
+<script>
+    var socket = io.connect('http://127.0.0.1:5000');
 
-        socket.on('new_message', function(msg) {
-            var chat = document.getElementById('chat');
+    socket.on('new_message', function(msg) {
+        var chat = document.getElementById('chat');
 
-            // Check if the role has changed or if there is no current message container
-            if (currentRole !== msg.role || !currentMessageContainer) {
-                // Create a new message container for each new message
-                currentMessageContainer = document.createElement('div');
-                currentMessageContainer.className = 'message';
-                chat.appendChild(currentMessageContainer);
-                currentRole = msg.role;
-            }
+        var newMessageContainer = document.createElement('div');
+        newMessageContainer.className = 'message';
 
-            // Update the current message container with the new content
-            currentMessageContainer.textContent = `${msg.role}: ${msg.content}`;
-            chat.scrollTop = chat.scrollHeight;  // Scroll to the bottom
-        });
+        var fontColor = '#D8DEE9';
+        var fontFamily = 'Arial, sans-serif';
 
-        function startConversation() {
-            var input = document.getElementById('topic_input');
-            var topic = input.value;
-            socket.emit('start_conversation', {topic: topic});
-            input.value = '';
+        switch (msg.role) {
+            case 'Light Yagami':
+                fontColor = '#FFD700';
+                fontFamily = "'Times New Roman', serif";
+                break;
+            case 'Sailor Moon':
+                fontColor = '#EE82EE';
+                fontFamily = "Brush Script MT, Brush Script Std, cursive";
+                break;
+            case 'Levi Ackerman':
+                fontColor = '#00FFFF';
+                fontFamily = "'Courier New', Courier, monospace";
+                break;
+            case 'Hello Kitty':
+                fontColor = '#FF69B4';
+                fontFamily = "'Lucida Console', Monaco, monospace";
+                break;
+            case 'Kuromi':
+                fontColor = '#CC99FF';
+                fontFamily = "'Impact', Charcoal, sans-serif";
+                break;
+            case 'Tendou Satori':
+                fontColor = '#FF6600';
+                fontFamily = "'Comic Sans MS', 'Comic Sans', cursive";
+                break;
+            default:
+                break;
         }
-    </script>
+
+        newMessageContainer.style.color = fontColor;
+        newMessageContainer.style.fontFamily = fontFamily;
+
+        newMessageContainer.textContent = `${msg.role}: ${msg.content}`;
+        chat.appendChild(newMessageContainer);
+    });
+
+    function startConversation() {
+        var input = document.getElementById('topic_input');
+        var topic = input.value;
+        var selectedAgent = document.getElementById('agent_selector').value;
+        socket.emit('start_conversation', {topic: topic, agent: selectedAgent});
+        input.value = '';
+    }
+
+    function handleKeyPress(event) {
+        if (event.keyCode === 13) {
+            startConversation();
+        }
+    }
+</script>
 </body>
 </html>

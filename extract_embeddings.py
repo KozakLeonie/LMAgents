@@ -15,19 +15,19 @@ def process_csv(input_file, output_file, model="model-identifier"):
 
         # Manually set the header
         header = ["agent_name", "message"]
-        
+
         # Get the first embedding to determine its size
         first_row = next(reader)
         agent_name, message = first_row
         first_embedding = get_embedding(message, model)
         embedding_size = len(first_embedding)
-        
+
         # Write the new header to the output file
         writer.writerow(header + ["embedding_" + str(i) for i in range(embedding_size)])
-        
+
         # Write the first row with its embedding
         writer.writerow(first_row + first_embedding)
-        
+
         # Process the remaining rows
         for row in reader:
             agent_name, message = row
